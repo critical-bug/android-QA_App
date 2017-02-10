@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_hobby"
+            android:title="趣味"/>
+        <item
+            android:id="@+id/nav_life"
+            android:title="生活"/>
+        <item
+            android:id="@+id/nav_health"
+            android:title="健康"/>
+        <item
+            android:id="@+id/nav_compter"
+            android:title="コンピューター"/>
+    </group>
+</menu>
