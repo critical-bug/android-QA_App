@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">QA_App</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">設定</string>
+    <string name="display_name">表示名</string>
+    <string name="to_change">変更</string>
+    <string name="to_logout">ログアウト</string>
 </resources>
