@@ -4,4 +4,8 @@
     <string name="display_name">表示名</string>
     <string name="to_change">変更</string>
     <string name="to_logout">ログアウト</string>
+    <string name="title">タイトル</string>
+    <string name="question">質問内容</string>
+    <string name="attachment">添付画像</string>
+    <string name="to_post">投稿</string>
 </resources>
