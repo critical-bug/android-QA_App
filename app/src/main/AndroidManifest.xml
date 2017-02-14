@@ -29,6 +29,8 @@
         </activity>
         <activity android:name=".QuestionDetailActivity">
         </activity>
+        <activity android:name=".AnswerSendActivity">
+        </activity>
     </application>
 
 </manifest>
