@@ -6,4 +6,6 @@ public class Const {
     public static final String AnswersPATH = "answers"; // Firebaseに解答を保存するパス
 
     public static final String NameKEY = "name"; // Preferenceに表示名を保存する時のキー
+    // user starred
+    public static final String STARRED_PATH = "starred";
 }

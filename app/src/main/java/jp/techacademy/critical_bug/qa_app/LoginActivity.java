@@ -82,12 +82,11 @@ public class LoginActivity extends AppCompatActivity {
                         // アカウント作成の時は表示名をFirebaseに保存する
                         String name = mNameEditText.getText().toString();
 
-
                         Map<String, String> data = new HashMap<String, String>();
                         data.put("name", name);
                         userRef.setValue(data);
 
-                        // 表示名をPrefarenceに保存する
+                        // 表示名をPreferenceに保存する
                         saveName(name);
                     } else {
                         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -166,7 +165,6 @@ public class LoginActivity extends AppCompatActivity {
                 String password = mPasswordEditText.getText().toString();
 
                 if (email.length() != 0 && password.length() >= 6) {
-                    // フラグを落としておく
                     mIsCreateAccount = false;
 
                     login(email, password);

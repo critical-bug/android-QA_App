@@ -30,4 +30,12 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true" />
 
+    <Button
+        android:text="☆"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/starredByUser"
+        android:layout_alignBottom="@+id/imageView"
+        android:layout_toEndOf="@+id/imageView"/>
+
 </RelativeLayout>

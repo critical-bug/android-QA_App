@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference mDatabaseReference;
     private ListView mListView;
     private DatabaseReference mGenreRef;
-    private final ChildEventListener mDataChangeEventListener = new ChildEventListener() {
+    private final ChildEventListener mGenreChangeEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(final DataSnapshot dataSnapshot, final String s) {
             HashMap map = (HashMap) dataSnapshot.getValue();
@@ -176,10 +176,10 @@ public class MainActivity extends AppCompatActivity {
 
                 // 選択したジャンルにリスナーを登録する
                 if (mGenreRef != null) {
-                    mGenreRef.removeEventListener(mDataChangeEventListener);
+                    mGenreRef.removeEventListener(mGenreChangeEventListener);
                 }
                 mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
-                mGenreRef.addChildEventListener(mDataChangeEventListener);
+                mGenreRef.addChildEventListener(mGenreChangeEventListener);
 
                 return true;
             }

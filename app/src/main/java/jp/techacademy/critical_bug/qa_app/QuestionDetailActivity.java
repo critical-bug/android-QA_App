@@ -72,9 +72,8 @@ public class QuestionDetailActivity extends AppCompatActivity {
 
         setTitle(mQuestion.getTitle());
 
-        // ListViewの準備
         mListView = (ListView) findViewById(R.id.listView);
-        mAdapter = new QuestionDetailListAdapter(this, mQuestion);
+        mAdapter = new QuestionDetailListAdapter(this, mQuestion, FirebaseAuth.getInstance().getCurrentUser());
         mListView.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
 
@@ -86,9 +85,9 @@ public class QuestionDetailActivity extends AppCompatActivity {
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
                 if (user == null) {
-                    // ログインしていなければログイン画面に遷移させる
                     Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                     startActivity(intent);
+                    // TODO ログイン後 Answer 画面に戻る
                 } else {
                     Intent intent = new Intent(getApplicationContext(), AnswerSendActivity.class);
                     intent.putExtra("question", mQuestion);
@@ -97,8 +96,8 @@ public class QuestionDetailActivity extends AppCompatActivity {
             }
         });
 
-        DatabaseReference dataBaseReference = FirebaseDatabase.getInstance().getReference();
-        mAnswerRef = dataBaseReference.child(Const.ContentsPATH).child(String.valueOf(mQuestion.getGenre())).child(mQuestion.getQuestionUid()).child(Const.AnswersPATH);
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        mAnswerRef = databaseReference.child(Const.ContentsPATH).child(String.valueOf(mQuestion.getGenre())).child(mQuestion.getQuestionUid()).child(Const.AnswersPATH);
         mAnswerRef.addChildEventListener(mDataChangeEventListener);
     }
 }
