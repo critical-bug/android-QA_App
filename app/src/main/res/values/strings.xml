@@ -8,4 +8,5 @@
     <string name="question">質問内容</string>
     <string name="attachment">添付画像</string>
     <string name="to_post">投稿</string>
+    <string name="starred">お気に入り</string>
 </resources>

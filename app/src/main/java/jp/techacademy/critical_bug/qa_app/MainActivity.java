@@ -26,12 +26,14 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int MENU_ITEM_ID_STARRED = 9;
     private Toolbar mToolbar;
     private int mGenre;
     private QuestionListAdapter mAdapter;
@@ -112,41 +114,96 @@ public class MainActivity extends AppCompatActivity {
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            Menu m = navigationView.getMenu();
+            m.add(1, MENU_ITEM_ID_STARRED, Menu.NONE, R.string.starred);
+            m.setGroupCheckable(1, true, true);
+        }
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
                 int id = item.getItemId();
                 Log.d("NavigationItemSelected", String.valueOf(id));
 
-                if (id == R.id.nav_hobby) {
-                    mToolbar.setTitle("趣味");
-                    mGenre = 1;
-                } else if (id == R.id.nav_life) {
-                    mToolbar.setTitle("生活");
-                    mGenre = 2;
-                } else if (id == R.id.nav_health) {
-                    mToolbar.setTitle("健康");
-                    mGenre = 3;
-                } else if (id == R.id.nav_compter) {
-                    mToolbar.setTitle("コンピューター");
-                    mGenre = 4;
+                if (id == MENU_ITEM_ID_STARRED) {
+                    mToolbar.setTitle(R.string.starred);
+                    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                    drawer.closeDrawer(GravityCompat.START);
+
+                    mQuestionArrayList.clear();
+                    mListView.setAdapter(mAdapter);
+
+                    if (mGenreRef != null) {
+                        mGenreRef.removeEventListener(mGenreChangeEventListener);
+                    }
+                    DatabaseReference ref = mDatabaseReference.child(Const.UsersPATH)
+                            .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                            .child(Const.STARRED_PATH);
+                    Log.d("NavigationItemSelected", ref.toString());
+                    // お気に入り質問全てについて呼ばれるリスナ
+                    ref.addChildEventListener(new ChildEventListener() {
+                        @Override
+                        public void onChildAdded(final DataSnapshot dataSnapshot, final String s) {
+                            Log.d("ChildEventListener", dataSnapshot.toString());
+                            final int genre = (int)(long) dataSnapshot.getValue();
+                            DatabaseReference questionRef = mDatabaseReference.child(Const.ContentsPATH)
+                                    .child(String.valueOf(genre))
+                                    .child(dataSnapshot.getKey());
+                            questionRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(final DataSnapshot dataSnapshot) {
+                                    Log.d("questionRef", dataSnapshot.getKey());
+                                    HashMap map = (HashMap) dataSnapshot.getValue();
+                                    mQuestionArrayList.add(constructQuestionFromMap(dataSnapshot.getKey(), genre, map));
+                                    mAdapter.notifyDataSetChanged(); // お気に入り質問1個ごとに呼ばれるの無駄っぽい
+                                }
+                                @Override
+                                public void onCancelled(final DatabaseError databaseError) {
+                                }
+                            });
+                        }
+                        @Override
+                        public void onChildChanged(final DataSnapshot dataSnapshot, final String s) {
+                        }
+                        @Override
+                        public void onChildRemoved(final DataSnapshot dataSnapshot) {
+                        }
+                        @Override
+                        public void onChildMoved(final DataSnapshot dataSnapshot, final String s) {
+                        }
+                        @Override
+                        public void onCancelled(final DatabaseError databaseError) {
+                        }
+                    });
+                } else {
+                    if (id == R.id.nav_hobby) {
+                        mToolbar.setTitle("趣味");
+                        mGenre = 1;
+                    } else if (id == R.id.nav_life) {
+                        mToolbar.setTitle("生活");
+                        mGenre = 2;
+                    } else if (id == R.id.nav_health) {
+                        mToolbar.setTitle("健康");
+                        mGenre = 3;
+                    } else if (id == R.id.nav_compter) {
+                        mToolbar.setTitle("コンピューター");
+                        mGenre = 4;
+                    }
+
+                    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                    drawer.closeDrawer(GravityCompat.START);
+
+                    // 質問のリストをクリアしてから再度Adapterにセットし、AdapterをListViewにセットし直す
+                    mQuestionArrayList.clear();
+                    mListView.setAdapter(mAdapter);
+
+                    // 選択したジャンルにリスナーを登録する
+                    if (mGenreRef != null) {
+                        mGenreRef.removeEventListener(mGenreChangeEventListener);
+                    }
+                    mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
+                    mGenreRef.addChildEventListener(mGenreChangeEventListener);
                 }
-
-                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                drawer.closeDrawer(GravityCompat.START);
-
-                // 質問のリストをクリアしてから再度Adapterにセットし、AdapterをListViewにセットし直す
-                mQuestionArrayList.clear();
-                mAdapter.setQuestionArrayList(mQuestionArrayList);
-                mListView.setAdapter(mAdapter);
-
-                // 選択したジャンルにリスナーを登録する
-                if (mGenreRef != null) {
-                    mGenreRef.removeEventListener(mGenreChangeEventListener);
-                }
-                mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
-                mGenreRef.addChildEventListener(mGenreChangeEventListener);
-
                 return true;
             }
         });
@@ -156,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
         mListView = (ListView) findViewById(R.id.listView);
         mAdapter = new QuestionListAdapter(this);
         mQuestionArrayList = new ArrayList<Question>();
+        mAdapter.setQuestionArrayList(mQuestionArrayList);
         mAdapter.notifyDataSetChanged();
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
