@@ -12,6 +12,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,32 +43,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onChildAdded(final DataSnapshot dataSnapshot, final String s) {
             HashMap map = (HashMap) dataSnapshot.getValue();
-            String title = (String) map.get("title");
-            String body = (String) map.get("body");
-            String name = (String) map.get("name");
-            String uid = (String) map.get("uid");
-            String imageString = (String) map.get("image");
-            byte[] bytes;
-            if (imageString != null) {
-                bytes = Base64.decode(imageString, Base64.DEFAULT);
-            } else {
-                bytes = new byte[0];
-            }
-
-            ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
-            HashMap answerMap = (HashMap) map.get("answers");
-            if (answerMap != null) {
-                for (Object key : answerMap.keySet()) {
-                    HashMap temp = (HashMap) answerMap.get(key);
-                    String answerBody = (String) temp.get("body");
-                    String answerName = (String) temp.get("name");
-                    String answerUid = (String) temp.get("uid");
-                    Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
-                    answerArrayList.add(answer);
-                }
-            }
-
-            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
+            Question question = constructQuestionFromMap(dataSnapshot.getKey(), mGenre, map);
             mQuestionArrayList.add(question);
             mAdapter.notifyDataSetChanged();
         }
@@ -80,18 +56,7 @@ public class MainActivity extends AppCompatActivity {
             for (Question question: mQuestionArrayList) {
                 if (dataSnapshot.getKey().equals(question.getQuestionUid())) {
                     // このアプリで変更がある可能性があるのは回答(Answer)のみ
-                    question.getAnswers().clear();
-                    HashMap answerMap = (HashMap) map.get("answers");
-                    if (answerMap != null) {
-                        for (Object key : answerMap.keySet()) {
-                            HashMap temp = (HashMap) answerMap.get(key);
-                            String answerBody = (String) temp.get("body");
-                            String answerName = (String) temp.get("name");
-                            String answerUid = (String) temp.get("uid");
-                            Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
-                            question.getAnswers().add(answer);
-                        }
-                    }
+                    constructAnswerList(map, question.getAnswers());
 
                     mAdapter.notifyDataSetChanged();
                 }
@@ -151,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull final MenuItem item) {
                 int id = item.getItemId();
+                Log.d("NavigationItemSelected", String.valueOf(id));
 
                 if (id == R.id.nav_hobby) {
                     mToolbar.setTitle("趣味");
@@ -223,5 +189,43 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @NonNull
+    private static Question constructQuestionFromMap(final String key, final int genre, final HashMap map) {
+        String imageString = (String) map.get("image");
+        byte[] bytes;
+        if (imageString != null) {
+            bytes = Base64.decode(imageString, Base64.DEFAULT);
+        } else {
+            bytes = new byte[0];
+        }
+
+        ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
+        constructAnswerList(map, answerArrayList);
+
+        return new Question((String) map.get("title"),
+                (String) map.get("body"),
+                (String) map.get("name"),
+                (String) map.get("uid"),
+                key,
+                genre,
+                bytes,
+                answerArrayList);
+    }
+
+    private static void constructAnswerList(final HashMap map, final ArrayList<Answer> answerArrayList) {
+        answerArrayList.clear();
+        HashMap answerMap = (HashMap) map.get("answers");
+        if (answerMap != null) {
+            for (Object key : answerMap.keySet()) {
+                HashMap temp = (HashMap) answerMap.get(key);
+                String answerBody = (String) temp.get("body");
+                String answerName = (String) temp.get("name");
+                String answerUid = (String) temp.get("uid");
+                Answer answer = new Answer(answerBody, answerName, answerUid, (String) key);
+                answerArrayList.add(answer);
+            }
+        }
     }
 }

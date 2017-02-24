@@ -103,7 +103,7 @@ public class QuestionDetailListAdapter extends BaseAdapter {
                 public void onClick(final View v) {
                     final DatabaseReference ref = starredRef.child(mQuestion.getQuestionUid());
                     Log.d("toStarOnClick", ref.toString());
-                    ref.setValue(1, new DatabaseReference.CompletionListener() {
+                    ref.setValue(mQuestion.getGenre(), new DatabaseReference.CompletionListener() {
                         @Override
                         public void onComplete(final DatabaseError databaseError, final DatabaseReference databaseReference) {
                             Log.d("toStarOnClick", "complete");
